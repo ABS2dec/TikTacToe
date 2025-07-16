@@ -8,7 +8,7 @@
     * {
       box-sizing: border-box;
     }
-// 07-07-24
+
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
@@ -50,7 +50,7 @@
     .board {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
+      gap: 0; /* We'll use borders for grid lines */
       margin-bottom: 15px;
     }
 
@@ -58,7 +58,7 @@
       width: 100px;
       height: 100px;
       background: rgba(255, 255, 255, 0.08);
-      border-radius: 15px;
+      border: 1px solid rgba(255, 255, 255, 0.2); /* Add grid lines */
       display: flex;
       justify-content: center;
       align-items: center;
@@ -69,6 +69,14 @@
 
     .cell:hover {
       background: rgba(255, 255, 255, 0.15);
+    }
+
+    .x {
+      color: #ff4c4c; /* Red for X */
+    }
+
+    .o {
+      color: #4cbaff; /* Blue for O */
     }
 
     .message {
@@ -189,6 +197,8 @@
       if (cell.textContent) return;
 
       cell.textContent = currentPlayer;
+      cell.classList.add(currentPlayer.toLowerCase()); // add color class
+
       if (checkWin(currentPlayer)) {
         message.textContent = `${names[currentPlayer]} Wins! 🎉`;
         score[currentPlayer]++;
