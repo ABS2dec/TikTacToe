@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tic-Tac-Toe Game</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: radial-gradient(circle at top left, #1f1f1f, #121212);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .game-container {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(10px);
+      padding: 30px;
+      width: 350px;
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+      font-size: 28px;
+    }
+
+    .players {
+      font-size: 15px;
+      margin-bottom: 15px;
+    }
+
+    .scoreboard {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 15px;
+      font-size: 16px;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .cell {
+      width: 100px;
+      height: 100px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 15px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 36px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .cell:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .message {
+      margin-bottom: 15px;
+      font-size: 18px;
+      min-height: 24px;
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+    }
+
+    button {
+      padding: 10px 15px;
+      border: none;
+      border-radius: 8px;
+      background: #00aaff;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: #0088cc;
+    }
+
+    .name-inputs {
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    input {
+      padding: 8px;
+      border-radius: 6px;
+      border: none;
+      outline: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <h1>Tic-Tac-Toe</h1>
+    
+    <div class="name-inputs" id="nameInputs">
+      <input type="text" id="playerXName" placeholder="Enter Player X Name" />
+      <input type="text" id="playerOName" placeholder="Enter Player O Name" />
+      <button onclick="startGame()">Start Game</button>
+    </div>
+
+    <div class="players" id="playersDisplay"></div>
+
+    <div class="scoreboard">
+      <div id="scoreXDisplay">X: 0</div>
+      <div id="scoreODisplay">O: 0</div>
+    </div>
+
+    <div class="board" id="board"></div>
+    <div class="message" id="message"></div>
+    <div class="buttons">
+      <button onclick="resetGame()">Reset</button>
+      <button onclick="resetScores()">Reset Scores</button>
+    </div>
+  </div>
+
+  <script>
+    const board = document.getElementById("board");
+    const message = document.getElementById("message");
+    const scoreXEl = document.getElementById("scoreXDisplay");
+    const scoreOEl = document.getElementById("scoreODisplay");
+    const nameInputs = document.getElementById("nameInputs");
+    const playersDisplay = document.getElementById("playersDisplay");
+
+    let cells = [];
+    let currentPlayer = "X";
+    let score = { X: 0, O: 0 };
+    let names = { X: "Player X", O: "Player O" };
+    let gameActive = false;
+
+    function showNameInputs() {
+      nameInputs.style.display = "flex";
+      board.innerHTML = "";
+      message.textContent = "Enter player names to start";
+    }
+
+    function startGame() {
+      const nameX = document.getElementById("playerXName").value.trim() || "Player X";
+      const nameO = document.getElementById("playerOName").value.trim() || "Player O";
+      names.X = nameX;
+      names.O = nameO;
+      playersDisplay.textContent = `${names.X} (X) vs ${names.O} (O)`;
+      nameInputs.style.display = "none";
+      gameActive = true;
+      resetGame();
+    }
+
+    function createBoard() {
+      board.innerHTML = "";
+      cells = [];
+      for (let i = 0; i < 9; i++) {
+        const cell = document.createElement("div");
+        cell.classList.add("cell");
+        cell.dataset.index = i;
+        cell.addEventListener("click", handleClick);
+        board.appendChild(cell);
+        cells.push(cell);
+      }
+    }
+
+    function handleClick(e) {
+      if (!gameActive) return;
+
+      const cell = e.target;
+      if (cell.textContent) return;
+
+      cell.textContent = currentPlayer;
+      if (checkWin(currentPlayer)) {
+        message.textContent = `${names[currentPlayer]} Wins! 🎉`;
+        score[currentPlayer]++;
+        updateScores();
+        gameActive = false;
+        return;
+      }
+
+      if (cells.every(c => c.textContent)) {
+        message.textContent = "It's a Draw! 🤝";
+        gameActive = false;
+        return;
+      }
+
+      currentPlayer = currentPlayer === "X" ? "O" : "X";
+      message.textContent = `${names[currentPlayer]}'s Turn`;
+    }
+
+    function checkWin(player) {
+      const winCombos = [
+        [0,1,2], [3,4,5], [6,7,8],
+        [0,3,6], [1,4,7], [2,5,8],
+        [0,4,8], [2,4,6]
+      ];
+
+      return winCombos.some(combo => 
+        combo.every(index => cells[index].textContent === player)
+      );
+    }
+
+    function resetGame() {
+      createBoard();
+      currentPlayer = "X";
+      message.textContent = `${names[currentPlayer]}'s Turn`;
+      gameActive = true;
+    }
+
+    function updateScores() {
+      scoreXEl.textContent = `${names.X}: ${score.X}`;
+      scoreOEl.textContent = `${names.O}: ${score.O}`;
+    }
+
+    function resetScores() {
+      score = { X: 0, O: 0 };
+      updateScores();
+      resetGame();
+    }
+
+    // Initial load
+    showNameInputs();
+  </script>
+</body>
+</html>
